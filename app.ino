@@ -1,3 +1,8 @@
+#include <boarddefs.h>
+#include <ir_Lego_PF_BitStreamEncoder.h>
+#include <IRremote.h>
+#include <IRremoteInt.h>
+
 #include <bitswap.h>
 #include <chipsets.h>
 #include <color.h>
@@ -31,7 +36,39 @@
 #define ACTIVE_LEDS 4
 #define PERIOD_MS 10
 #define MOTION_PIN 2
+#define IR_PIN 8
+#define REMOTE_PWR 0xFD00FF
+#define REMOTE_VOL_UP 0xFD807F
+#define REMOTE_FUNC_STOP 0xFD40BF
+#define REMOTE_PREV 0xFD20DF
+#define REMOTE_PAUSE_PLAY 0xFDA05F
+#define REMOTE_NEXT 0xFD609F
+#define REMOTE_DOWN 0xFD10EF
+#define REMOTE_VOL_DOWN 0xFD906F
+#define REMOTE_UP 0xFD50AF
+#define REMOTE_0 0xFD30CF
+#define REMOTE_EQ 0xFDB04F
+#define REMOTE_ST_REPT 0xFD708F
+#define REMOTE_1 0xFD08F7
+#define REMOTE_2 0xFD8877
+#define REMOTE_3 0xFD48B7
+#define REMOTE_4 0xFD28D7
+#define REMOTE_5 0xFDA857
+#define REMOTE_6 0xFD6897
+#define REMOTE_7 0xFD18E7
+#define REMOTE_8 0xFD9867
+#define REMOTE_9 0xFD58A7
+#define clamp(X, Y, N) (N > Y ? Y : N < X ? X : N)
+
+enum Command : uint8_t
+{
+  TogglePower
+};
+
 CRGB leds[NUM_LEDS];
+IRrecv irrecv(IR_PIN);
+decode_results ir_results;
+unsigned long time_now = 0;
 
 void turnOffLeds()
 {
@@ -45,6 +82,14 @@ class IState
 {
 public:
   virtual void Update(int deltaMs);
+  virtual void ReceiveCommand(Command command);
+};
+
+class PowerState : public IState
+{
+public:
+  virtual bool IsSuspended();
+  virtual IState *ChildProgram();
 };
 
 class OffState : public IState
@@ -57,6 +102,10 @@ class OffState : public IState
   }
 
   void Update(int deltaMs)
+  {
+    //NOOP for now
+  }
+  void ReceiveCommand(Command command)
   {
     //NOOP for now
   }
@@ -115,9 +164,13 @@ public:
       leds[i] = RenderColor;
     }
   }
+  void ReceiveCommand(Command command)
+  {
+    //NOOP for now
+  }
 };
 
-class OnState : public IState
+class OnState : public PowerState
 {
   IState *inner;
 
@@ -131,19 +184,35 @@ public:
       break;
     }
   }
+  OnState(IState *programToResume)
+  {
+    inner = programToResume;
+  }
   ~OnState()
   {
     delete inner;
+  }
+  bool IsSuspended()
+  {
+    return false;
+  }
+  IState *ChildProgram()
+  {
+    return inner;
   }
 
   void Update(int deltaMs)
   {
     inner->Update(deltaMs);
   }
+  void ReceiveCommand(Command command)
+  {
+    //NOOP for now
+  }
 };
 
 #define FIVE_MINUTES 300000
-class SuspendState : public IState
+class SuspendState : public PowerState
 {
 
   IState *_suspended;
@@ -181,26 +250,75 @@ public:
       turnOffLeds();
     }
   }
+
+  bool IsSuspended()
+  {
+    return true;
+  }
+  IState *ChildProgram()
+  {
+    return _suspended;
+  }
+  void ReceiveCommand(Command command)
+  {
+    //NOOP for now
+  }
 };
 
 class LightBoiState : public IState
 {
-  IState *inner;
+  PowerState *inner;
 
 public:
   LightBoiState()
   {
     //inner = new OnState(LightProgram::Purple_Breath);
-    inner = new SuspendState(new OnState(LightProgram::Purple_Breath));
+    inner = new OnState(LightProgram::Purple_Breath);
   }
   ~LightBoiState()
   {
     delete inner;
   }
 
+  void TogglePower()
+  {
+    IState *childProgram = inner->ChildProgram();
+    if (childProgram != nullptr)
+    {
+      PowerState *prev = inner;
+      if (inner->IsSuspended())
+      {
+        inner = new OnState(childProgram);
+      }
+      else
+      {
+        inner = new SuspendState(childProgram);
+      }
+      delete prev;
+    }
+  }
   void Update(int deltaMs)
   {
+    if (irrecv.decode(&ir_results))
+    {
+      Serial.println(ir_results.value, BIN);
+      irrecv.resume();
+      switch (ir_results.value)
+      {
+      case REMOTE_PWR:
+        turnOffLeds();
+        // TogglePower();
+        break;
+      default:
+        turnOffLeds();
+        break;
+      }
+    }
     inner->Update(deltaMs);
+  }
+  void ReceiveCommand(Command command)
+  {
+    //Top Level Object, Sends commands but does not receive.
   }
 };
 
@@ -208,14 +326,19 @@ IState *state;
 
 void setup()
 {
-  state = new LightBoiState();
+  Serial.begin(9600);
+  irrecv.enableIRIn();
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  state = new LightBoiState();
   pinMode(MOTION_PIN, INPUT);
 }
 
 void loop()
 {
-  delay(PERIOD_MS);
-  state->Update(PERIOD_MS);
-  FastLED.show();
+  if (millis() - time_now > PERIOD_MS)
+  {
+    time_now = millis();
+    state->Update(PERIOD_MS);
+    FastLED.show();
+  }
 }
