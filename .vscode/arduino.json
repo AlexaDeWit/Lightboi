@@ -2,5 +2,5 @@
     "sketch": "app.ino",
     "board": "arduino:avr:mega",
     "configuration": "cpu=atmega2560",
-    "port": "/dev/tty.usbmodem141401"
+    "port": "COM3"
 }

@@ -29,8 +29,17 @@
 #define NUM_LEDS 300
 #define DATA_PIN 6
 #define ACTIVE_LEDS 4
-#define PERIOD_MS 50
+#define PERIOD_MS 10
+#define MOTION_PIN 2
 CRGB leds[NUM_LEDS];
+
+void turnOffLeds()
+{
+  for (int16_t i = 0; i < NUM_LEDS; i++)
+  {
+    leds[i] = CRGB::Black;
+  }
+};
 
 class IState
 {
@@ -58,10 +67,10 @@ enum LightProgram : unsigned char
   Purple_Breath
 };
 
-#define PURPLE_BREATH_CYCLE 5000
-#define PURPLE_BREATH_STEPS_PER_CYCLE 100
-#define PURPLE_BREATH_CYCLE_TIME 50
-class PurpleBreath : public IState
+#define BREATH_CYCLE 5000
+#define BREATH_STEPS_PER_CYCLE 100
+#define BREATH_CYCLE_TIME 50
+class Breath : public IState
 {
   uint16_t CycleCount;
   uint16_t Time;
@@ -69,27 +78,27 @@ class PurpleBreath : public IState
   CRGB BaseColor;
 
 public:
-  PurpleBreath()
+  Breath(CRGB _BaseColor)
   {
     CycleCount = 0;
     Time = 0;
-    BaseColor = CRGB::Purple;
+    BaseColor = _BaseColor;
     increasing = true;
   }
-  ~PurpleBreath()
+  ~Breath()
   {
   }
   void Update(int deltaMs)
   {
     Time += deltaMs;
-    while (Time > PURPLE_BREATH_CYCLE_TIME)
+    while (Time > BREATH_CYCLE_TIME)
     {
-      Time -= PURPLE_BREATH_CYCLE_TIME;
+      Time -= BREATH_CYCLE_TIME;
       CycleCount++;
     }
-    while (CycleCount > PURPLE_BREATH_STEPS_PER_CYCLE)
+    while (CycleCount > BREATH_STEPS_PER_CYCLE)
     {
-      CycleCount -= PURPLE_BREATH_STEPS_PER_CYCLE;
+      CycleCount -= BREATH_STEPS_PER_CYCLE;
       increasing = !increasing;
     }
     CRGB RenderColor = BaseColor;
@@ -99,7 +108,7 @@ public:
     }
     else
     {
-      RenderColor.nscale8_video(10 + (PURPLE_BREATH_STEPS_PER_CYCLE - CycleCount));
+      RenderColor.nscale8_video(10 + (BREATH_STEPS_PER_CYCLE - CycleCount));
     }
     for (int i = 0; i < ACTIVE_LEDS; i++)
     {
@@ -118,7 +127,7 @@ public:
     switch (toRun)
     {
     case LightProgram::Purple_Breath:
-      inner = new PurpleBreath();
+      inner = new Breath(CRGB::Purple);
       break;
     }
   }
@@ -133,6 +142,47 @@ public:
   }
 };
 
+#define FIVE_MINUTES 300000
+class SuspendState : public IState
+{
+
+  IState *_suspended;
+  IState *_motionWake;
+  uint32_t _remainingWakeTime;
+
+public:
+  SuspendState(IState *suspended)
+  {
+    _suspended = suspended;
+    CRGB suspendColor = CRGB::Purple;
+    suspendColor.nscale8_video(35);
+    _motionWake = new Breath(CRGB::Purple);
+    _remainingWakeTime = 0;
+  }
+
+  ~SuspendState()
+  {
+    delete _motionWake;
+  }
+
+  void Update(int deltaMs)
+  {
+    _remainingWakeTime = deltaMs > _remainingWakeTime ? 0 : _remainingWakeTime - deltaMs;
+    if (digitalRead(MOTION_PIN) == HIGH)
+    {
+      _remainingWakeTime = FIVE_MINUTES;
+    }
+    if (_remainingWakeTime > 0)
+    {
+      _motionWake->Update(deltaMs);
+    }
+    else
+    {
+      turnOffLeds();
+    }
+  }
+};
+
 class LightBoiState : public IState
 {
   IState *inner;
@@ -140,7 +190,8 @@ class LightBoiState : public IState
 public:
   LightBoiState()
   {
-    inner = new OnState(LightProgram::Purple_Breath);
+    //inner = new OnState(LightProgram::Purple_Breath);
+    inner = new SuspendState(new OnState(LightProgram::Purple_Breath));
   }
   ~LightBoiState()
   {
@@ -154,10 +205,12 @@ public:
 };
 
 IState *state;
+
 void setup()
 {
   state = new LightBoiState();
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  pinMode(MOTION_PIN, INPUT);
 }
 
 void loop()
