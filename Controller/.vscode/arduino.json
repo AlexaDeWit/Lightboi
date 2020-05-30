@@ -1,0 +1,5 @@
+{
+  "sketch": "app.ino",
+  "board": "arduino:samd:mkr1000",
+  "port": "COM4"
+}

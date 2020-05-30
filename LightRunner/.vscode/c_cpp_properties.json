@@ -1,0 +1,43 @@
+{
+  "configurations": [
+    {
+      "name": "Win32",
+      "includePath": [
+        "C:\\Users\\Alexa\\Documents\\Arduino\\libraries\\IRremote",
+        "C:\\Users\\Alexa\\Documents\\Arduino\\libraries\\FastLED",
+        "D:\\Dev Installs\\Arduino\\hardware\\arduino\\avr\\**",
+        "D:\\Dev Installs\\Arduino\\hardware\\arduino\\avr\\cores\\arduino",
+        "D:\\Dev Installs\\Arduino\\tools\\**"
+      ],
+      "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
+      "windowsSdkVersion": "10.0.18362.0",
+      "compilerPath": "D:/Dev Installs/Microsoft Visual Studio/VC/Tools/MSVC/14.24.28314/bin/Hostx64/x64/cl.exe",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "msvc-x64",
+      "forcedInclude": [
+        "D:\\Dev Installs\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
+      ]
+    },
+    {
+      "name": "Win64",
+      "includePath": [
+        "C:\\Users\\Alexa\\Documents\\Arduino\\libraries\\IRremote",
+        "C:\\Users\\Alexa\\Documents\\Arduino\\libraries\\FastLED",
+        "D:\\Dev Installs\\Arduino\\hardware\\arduino\\avr\\**",
+        "D:\\Dev Installs\\Arduino\\hardware\\arduino\\avr\\cores\\arduino",
+        "D:\\Dev Installs\\Arduino\\tools\\**"
+      ],
+      "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
+      "windowsSdkVersion": "10.0.18362.0",
+      "compilerPath": "D:/Dev Installs/Microsoft Visual Studio/VC/Tools/MSVC/14.24.28314/bin/Hostx64/x64/cl.exe",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "msvc-x64",
+      "forcedInclude": [
+        "D:\\Dev Installs\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
+      ]
+    }
+  ],
+  "version": 4
+}

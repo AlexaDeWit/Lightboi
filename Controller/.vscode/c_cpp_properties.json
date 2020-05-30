@@ -3,10 +3,10 @@
     {
       "name": "Win32",
       "includePath": [
+        "C:\\Users\\Alexa\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\**",
+        "C:\\Users\\Alexa\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\samd\\1.8.6\\**",
         "C:\\Users\\Alexa\\Documents\\Arduino\\libraries\\IRremote",
         "C:\\Users\\Alexa\\Documents\\Arduino\\libraries\\FastLED",
-        "D:\\Dev Installs\\Arduino\\hardware\\arduino\\avr\\**",
-        "D:\\Dev Installs\\Arduino\\hardware\\arduino\\avr\\cores\\arduino",
         "D:\\Dev Installs\\Arduino\\tools\\**"
       ],
       "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
@@ -16,16 +16,15 @@
       "cppStandard": "c++17",
       "intelliSenseMode": "msvc-x64",
       "forcedInclude": [
-        "D:\\Dev Installs\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
+        "C:\\Users\\Alexa\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\samd\\1.8.6\\cores\\arduino\\Arduino.h"
       ]
     },
     {
       "name": "Win64",
       "includePath": [
+        "C:\\Users\\Alexa\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\**",
+        "C:\\Users\\Alexa\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\samd\\1.8.6\\**",
         "C:\\Users\\Alexa\\Documents\\Arduino\\libraries\\IRremote",
-        "C:\\Users\\Alexa\\Documents\\Arduino\\libraries\\FastLED",
-        "D:\\Dev Installs\\Arduino\\hardware\\arduino\\avr\\**",
-        "D:\\Dev Installs\\Arduino\\hardware\\arduino\\avr\\cores\\arduino",
         "D:\\Dev Installs\\Arduino\\tools\\**"
       ],
       "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
@@ -35,7 +34,7 @@
       "cppStandard": "c++17",
       "intelliSenseMode": "msvc-x64",
       "forcedInclude": [
-        "D:\\Dev Installs\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
+        "C:\\Users\\Alexa\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\samd\\1.8.6\\cores\\arduino\\Arduino.h"
       ]
     },
     {
